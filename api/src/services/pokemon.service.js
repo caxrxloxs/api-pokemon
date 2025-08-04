@@ -1,6 +1,7 @@
 import { PokemonRepository } from '../repositories/pokemon.repository.js';
 
 export const PokemonService = {
+
     async getAllPokemons({ page, limit }) {
 
         const [list, total] = await Promise.all([
@@ -20,15 +21,19 @@ export const PokemonService = {
     },//<< fin getAllPokemons 
 
     async findById(id) {
-        
+
         const pokemon = await PokemonRepository.findById(id);
         return pokemon;
     },
 
     async create(data) {
-        console.log('[4] Service - Creando pokémon con datos:', data);
-        const created = await PokemonRepository.create(data);
-        return created;
+        const existing = await PokemonRepository.findByCode(data.code);
+        if (existing) {
+            const error = new Error('El código ya está en uso');
+            error.statusCode = 409; // Conflict
+            throw error;
+        }
+        return await PokemonRepository.create(data);
     },
 
     async update(id, data) {
@@ -36,7 +41,7 @@ export const PokemonService = {
         return updated;
     },
     async remove(id) {
-        
+
         const removed = await PokemonRepository.remove(id);
         return removed;
     },

@@ -20,7 +20,7 @@ import { authConfig } from '../config/auth.js';
       }
 
       console.log('[Auth] Token recibido:', token);
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, authConfig.jwtSecret);
 
       // Verificar si el usuario existe
       const user = await User.findById(decoded.sub);
