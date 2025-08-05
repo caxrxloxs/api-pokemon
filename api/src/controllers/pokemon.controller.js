@@ -6,7 +6,10 @@ export const PokemonController = {
     try {
       const page = Math.max(1, parseInt(req.query.page) || 1);
       const limit = Math.max(1, parseInt(req.query.limit) || 10);
-
+      if (isNaN(page) || isNaN(limit)) {
+        return res.status(400).json({ error: 'page y limit deben ser números' });
+      }
+      const filters = {};
       const pokemons = await PokemonService.getPokemonsPaginated({ page, limit });
       res.json(pokemons);
     } catch (error) {

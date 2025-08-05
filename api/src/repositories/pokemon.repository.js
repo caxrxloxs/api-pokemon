@@ -1,11 +1,15 @@
 import { Pokemon } from '../models/pokemon.model.js';
 
 export const PokemonRepository = {
-  // 1. Búsqueda paginada con filtros (para futuros features)
-  
+  //  Búsqueda paginada con filtros (para futuros features)
+
   async getAllPaginated({ page = 1, limit = 10, filters = {} }) {
     const [data, total] = await Promise.all([
-      Pokemon.find(filters).skip((page - 1) * limit).limit(limit).lean(),
+      Pokemon.find(filters)
+      .select('-__v')
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
       Pokemon.countDocuments(filters),
     ]);
     return {
@@ -16,19 +20,15 @@ export const PokemonRepository = {
     };
   },
 
-  // 2. Conteo con filtros
-  async count(filters = {}) {
-    return Pokemon.countDocuments(filters);
-  },
 
-  // 3. Búsqueda por ID (con opción lean configurable)
+  //  Búsqueda por ID (con opción lean configurable)
   async findById(id, lean = true) {
     return lean
       ? Pokemon.findById(id).lean()
       : Pokemon.findById(id);
   },
 
-  // 4. Creación con manejo de errores de duplicados
+  //  Creación con manejo de errores de duplicados
   async create(data) {
     try {
       return await Pokemon.create(data);
@@ -41,7 +41,7 @@ export const PokemonRepository = {
     }
   },
 
-  // 5. Actualización con validación
+  // Actualización con validación
   async update(id, data) {
     const updated = await Pokemon.findByIdAndUpdate(
       id,
@@ -55,7 +55,7 @@ export const PokemonRepository = {
     return updated;
   },
 
-  // 6. Eliminación con verificación
+  // Eliminación con verificación
   async remove(id) {
     const deleted = await Pokemon.findByIdAndDelete(id);
     if (!deleted) throw new Error('Pokémon no encontrado');

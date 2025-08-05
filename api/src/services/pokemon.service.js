@@ -2,17 +2,8 @@ import { PokemonRepository } from '../repositories/pokemon.repository.js';
 
 export const PokemonService = {
 
-    async getPokemonsPaginated({ page, limit }) {
-        const result = await PokemonRepository.getAllPaginated({ page, limit });
-        return {
-            data: result.data,
-            pagination: {
-                page,
-                limit,
-                total: result.total,
-                totalPages: result.totalPages
-            }
-        };
+    async getPokemonsPaginated({ page = 1, limit = 10, filters = {} }) {
+        return PokemonRepository.getAllPaginated({ page, limit, filters });
     },
 
     async findById(id) {
