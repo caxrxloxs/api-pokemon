@@ -1,13 +1,13 @@
 import { PokemonService } from '../services/pokemon.service.js';
-
+import mongoose from 'mongoose';
 
 export const PokemonController = {
   async getAllPokemons(req, res) {
     try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const limit = Math.max(1, parseInt(req.query.limit) || 10);
 
-      const pokemons = await PokemonService.getAllPokemons({ page, limit });
+      const pokemons = await PokemonService.getPokemonsPaginated({ page, limit });
       res.json(pokemons);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -16,9 +16,20 @@ export const PokemonController = {
 
   async getPokemonById(req, res) {
 
-    const pokemon = await PokemonService.findById(req.params.id);
-    if (!pokemon) return res.status(404).json({ message: 'Pokemon no encontrado' });
-    res.json(pokemon);
+    const { id } = req.params;
+    // Validar si el ID tiene un formato válido de MongoDB
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'ID inválido' });
+    }
+
+    try {
+      const pokemon = await PokemonService.findById(req.params.id);
+      if (!pokemon) return res.status(404).json({ message: 'Pokemon no encontrado' });
+      res.json(pokemon);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+
   },
 
   async createPokemon(req, res) {
@@ -37,16 +48,24 @@ export const PokemonController = {
   },
 
   async updatePokemon(req, res) {
-    const updated = await PokemonService.update(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ message: 'Not found' });
-    res.json(updated);
+    try {
+      const updated = await PokemonService.update(req.params.id, req.body);
+      if (!updated) return res.status(404).json({ message: 'Not found' });
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   },
 
   async deletePokemon(req, res) {
+    try {
+      const removed = await PokemonService.remove(req.params.id);
+      if (!removed) return res.status(404).json({ message: 'Not found' });
+      res.json({ message: 'Deleted' });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
 
-    const removed = await PokemonService.remove(req.params.id);
-    if (!removed) return res.status(404).json({ message: 'Not found' });
-    res.json({ message: 'Deleted' });
   },
 
 };

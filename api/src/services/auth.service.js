@@ -25,10 +25,10 @@ export const AuthService = {
     async login({ email, password }) {
         try {
             const user = await User.findOne({ email });
-            if (!user) return null;
+            if (!user) throw new Error('Usuario no encontrado');
 
             const isPasswordValid = await bcrypt.compare(password, user.password);
-            if (!isPasswordValid) return null;
+            if (!isPasswordValid) throw new Error('Contraseña incorrecta');
 
             const token = jwt.sign(
                 {
@@ -50,7 +50,7 @@ export const AuthService = {
                 }
             };
         } catch (error) {
-            throw error;
+            throw new Error(`Error en login: ${error.message}`);;
         }
     }
 };

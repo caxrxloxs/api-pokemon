@@ -2,23 +2,18 @@ import { PokemonRepository } from '../repositories/pokemon.repository.js';
 
 export const PokemonService = {
 
-    async getAllPokemons({ page, limit }) {
-
-        const [list, total] = await Promise.all([
-            PokemonRepository.getAllPokemons({ page, limit }),
-            PokemonRepository.countPokemons()
-        ]);
-
+    async getPokemonsPaginated({ page, limit }) {
+        const result = await PokemonRepository.getAllPaginated({ page, limit });
         return {
-            data: list,
+            data: result.data,
             pagination: {
                 page,
                 limit,
-                total,
-                totalPages: Math.ceil(total / limit)
+                total: result.total,
+                totalPages: result.totalPages
             }
         };
-    },//<< fin getAllPokemons 
+    },
 
     async findById(id) {
 
@@ -30,7 +25,7 @@ export const PokemonService = {
         const existing = await PokemonRepository.findByCode(data.code);
         if (existing) {
             const error = new Error('El código ya está en uso');
-            error.statusCode = 409; // Conflict
+            error.statusCode = 409;
             throw error;
         }
         return await PokemonRepository.create(data);
@@ -38,11 +33,21 @@ export const PokemonService = {
 
     async update(id, data) {
         const updated = await PokemonRepository.update(id, data);
+        if (!updated) {
+            const error = new Error('Pokemon no encontrado');
+            error.statusCode = 404;
+            throw error;
+        }
         return updated;
     },
-    async remove(id) {
 
+    async remove(id) {
         const removed = await PokemonRepository.remove(id);
+        if (!removed) {
+            const error = new Error('Pokemon no encontrado');
+            error.statusCode = 404;
+            throw error;
+        }
         return removed;
     },
 

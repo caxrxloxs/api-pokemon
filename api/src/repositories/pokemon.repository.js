@@ -2,11 +2,18 @@ import { Pokemon } from '../models/pokemon.model.js';
 
 export const PokemonRepository = {
   // 1. Búsqueda paginada con filtros (para futuros features)
-  async getAll({ page = 1, limit = 10, filters = {} }) {
-    return Pokemon.find(filters)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean();
+  
+  async getAllPaginated({ page = 1, limit = 10, filters = {} }) {
+    const [data, total] = await Promise.all([
+      Pokemon.find(filters).skip((page - 1) * limit).limit(limit).lean(),
+      Pokemon.countDocuments(filters),
+    ]);
+    return {
+      data,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+    };
   },
 
   // 2. Conteo con filtros
@@ -16,7 +23,7 @@ export const PokemonRepository = {
 
   // 3. Búsqueda por ID (con opción lean configurable)
   async findById(id, lean = true) {
-    return lean 
+    return lean
       ? Pokemon.findById(id).lean()
       : Pokemon.findById(id);
   },
@@ -39,7 +46,7 @@ export const PokemonRepository = {
     const updated = await Pokemon.findByIdAndUpdate(
       id,
       data,
-      { 
+      {
         new: true,         // Devuelve el documento actualizado
         runValidators: true // Ejecuta validaciones del schema
       }

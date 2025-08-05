@@ -7,12 +7,13 @@ import { authConfig } from '../config/auth.js';
     console.log('[Auth] Iniciando verificación de token');
 
     try {
+      // Verifica que se envia un tocken
       const authHeader = req.headers.authorization;
       if (!authHeader) {
         console.log('[Auth] No se proporcionó header Authorization');
         return res.status(401).json({ error: 'Token no proporcionado' });
       }
-
+      // guarda token authHeader es transformado en un array de 2 elementos y se selecciona el segundo elemento(indice 1) partes = ['Bearer', 'eyJhbGciOiJIUzI1NiIsInR5cCI6...']
       const token = authHeader.split(' ')[1];
       if (!token) {
         console.log('[Auth] Formato de token inválido');
